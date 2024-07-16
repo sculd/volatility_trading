@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import pandas as pd
 import data.polygon
 import data.daily
@@ -12,12 +13,12 @@ def concat_otm_short_long(df_otm_short, df_otm_long, o_or_c, option_type):
     return df_otm_options
 
 
-def get_df_otm_options_spread(date_str, df_otm_options_history, option_type, tolerance_days = 0):
+def get_df_otm_options_spread(date_str, df_otm_options_history, option_type, tolerance_days=0):
     # df_otm_options_daily = df_otm_options_history[df_otm_options_history.expiration_date == date_str]
     expiration_date_max = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=tolerance_days)).strftime("%Y-%m-%d")
     df_otm_options_daily = df_otm_options_history[
         (df_otm_options_history.expiration_date <= expiration_date_max) &
-        (df_otm_options_history.expiration_date == date_str)
+        (df_otm_options_history.date == date_str)
     ]    
 
     if df_otm_options_daily.empty:
@@ -55,8 +56,8 @@ def get_df_otm_options_spread(date_str, df_otm_options_history, option_type, tol
     return df_otm_options
 
 
-def get_df_otm_options_spread_history(df_daily_expectation, df_options_history, option_type, dates):
-    df_otm_options_history = df_options_history.join(df_daily_expectation, on='expiration_date')
+def get_df_otm_options_spread_history(df_daily_expectation, df_options_history, option_type, dates, tolerance_days=0):
+    df_otm_options_history = df_options_history.join(df_daily_expectation, on='date')
     if option_type == "call":
         df_otm_options_history = df_otm_options_history[
             df_otm_options_history.strike_price > df_otm_options_history.upper_price
@@ -67,8 +68,8 @@ def get_df_otm_options_spread_history(df_daily_expectation, df_options_history, 
         ]
     
     dfs = []
-    for date in dates[1:]:
-        df_date = get_df_otm_options_spread(date, df_otm_options_history, option_type)
+    for date in dates[:]:
+        df_date = get_df_otm_options_spread(date, df_otm_options_history, option_type, tolerance_days=tolerance_days)
         if df_date is None:
             continue
         dfs.append(df_date)
