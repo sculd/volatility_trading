@@ -38,7 +38,7 @@ df_sbux_intraday_history = pd.read_pickle('market_data/df_sbux_intraday_history.
 
 df_spx_call_options_history = pd.read_pickle('market_data/df_spx_call_options_history.pkl')
 df_spx_put_options_history = pd.read_pickle('market_data/df_spx_put_options_history.pkl')
-df_goog_call_options_history.to_pickle('market_data/df_goog_call_options_history.pkl')
+df_goog_call_options_history = pd.read_pickle('market_data/df_goog_call_options_history.pkl')
 
 
 df_spy_market_open_history = data.daily.get_df_market_open_or_close_history_from_intraday_history(df_spy_intraday_history, "open")
