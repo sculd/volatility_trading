@@ -11,8 +11,15 @@ def concat_otm_short_long(df_otm_short, df_otm_long, o_or_c, option_type):
         df_otm_options[f"c_market_{o_or_c}_l_{option_type}"]
     return df_otm_options
 
-def get_df_otm_options_spread(date_str, df_otm_options_history, option_type):
-    df_otm_options_daily = df_otm_options_history[df_otm_options_history.expiration_date == date_str]
+
+def get_df_otm_options_spread(date_str, df_otm_options_history, option_type, tolerance_days = 0):
+    # df_otm_options_daily = df_otm_options_history[df_otm_options_history.expiration_date == date_str]
+    expiration_date_max = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=tolerance_days)).strftime("%Y-%m-%d")
+    df_otm_options_daily = df_otm_options_history[
+        (df_otm_options_history.expiration_date <= expiration_date_max) &
+        (df_otm_options_history.expiration_date == date_str)
+    ]    
+
     if df_otm_options_daily.empty:
         return None
 

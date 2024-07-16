@@ -26,6 +26,7 @@ trading_dates = calendar.schedule(
 
 # daily
 
+'''
 def get_cache_df_daily_history(ticker, df_name, date_from_str = "2020-01-01", date_to_str = "2024-07-02"):
     df_daily_history = data.polygon.polygon_result_to_dataframe(data.polygon.get_polygon_result_dict(
         data.polygon.get_polygon_range_query_url(ticker, date_from_str, date_to_str)))
@@ -57,11 +58,16 @@ df_sbux_intraday_history = get_cache_df_intraday_history(ticker_sbux, "df_sbux_i
 
 # options contracts
 
-df_spx_call_options_history = data.option_contracts.get_df_options_history("SPX", "call")
+df_spx_call_options_history = data.option_contracts.get_df_options_history("SPX", "call", trading_dates)
 df_spx_call_options_history.to_pickle('market_data/df_spx_call_options_history.pkl')
 
-df_spx_put_options_history = data.option_contracts.get_df_options_history("SPX", "put")
+df_spx_put_options_history = data.option_contracts.get_df_options_history("SPX", "put", trading_dates)
 df_spx_put_options_history.to_pickle('market_data/df_spx_put_options_history.pkl')
+'''
+
+# normally, company options have weekly exp options.
+df_goog_call_options_history = data.option_contracts.get_df_options_history("GOOG", "call", trading_dates, zero_day_expiration=False)
+df_goog_call_options_history.to_pickle('market_data/df_goog_call_options_history.pkl')
 
 
 
