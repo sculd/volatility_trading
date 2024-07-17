@@ -2,7 +2,7 @@ import pandas as pd
 import data.intraday
 import numpy as np
 import scipy.optimize as optimize
-import math
+import math, os
 import requests
 
 import data.polygon
@@ -11,6 +11,7 @@ import data.daily
 from scipy.stats import norm
 from datetime import datetime, timedelta
 
+polygon_api_key = os.getenv("QUANT_GALORE_POLYGON_API_KEY")
 
 def black_scholes(option_type, S, K, t, r, q, sigma):
     """
@@ -114,22 +115,23 @@ def get_atm_put_volatility(ticker, as_of_date):
 def get_df_atm_vol_history(ticker, dates):
     atm_call_vols = []
     atm_put_vols = []
-    dates = []
-    for date in dates[1:]:
-        print(date)
+    valid_dates = []
+    for date in dates[:]:
         try:
             atm_call_vol = get_atm_call_volatility(ticker, date)
         except Exception as ex:
+            print(ex)
             continue
             
         try:
             atm_put_vol = get_atm_put_volatility(ticker, date)
         except Exception as ex:
+            print(ex)
             continue
 
         atm_call_vols.append(atm_call_vol)
         atm_put_vols.append(atm_put_vol)
-        dates.append(date)
-    df = pd.DataFrame({"atm_call_vol": atm_call_vols, "atm_put_vol": atm_put_vols, "date": dates}).set_index("date")
+        valid_dates.append(date)
+    df = pd.DataFrame({"atm_call_vol": atm_call_vols, "atm_put_vol": atm_put_vols, "date": valid_dates}).set_index("date")
     return df
 

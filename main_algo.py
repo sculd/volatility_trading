@@ -72,16 +72,14 @@ df_spx_otm_put_options_spread_history.to_pickle('market_data/df_spx_otm_put_opti
 
 
 # volatility
-df_goog_atm_vol_history = algo.volatility.get_df_atm_vol_history("GOOG")
+df_goog_atm_vol_history = algo.volatility.get_df_atm_vol_history("GOOG", trading_dates)
 df_goog_atm_vol_history.to_pickle('market_data/df_goog_atm_vol_history.pkl')
 
-df_sbux_atm_vol_history = algo.volatility.get_df_atm_vol_history("SBUX")
+df_sbux_atm_vol_history = algo.volatility.get_df_atm_vol_history("SBUX", trading_dates)
 df_sbux_atm_vol_history.to_pickle('market_data/df_sbux_atm_vol_history.pkl')
 '''
 
-df_goog_otm_call_options_spread_history = algo.option_spread.get_df_otm_options_spread_history(df_goog_daily_expectation, df_goog_call_options_history, "call", trading_dates, tolerance_days=5)
 
-
-
-
+df_goog_atm_vol_history = algo.volatility.get_df_atm_vol_history("GOOG", trading_dates)
+df_goog_atm_vol_history.to_pickle('market_data/df_goog_atm_vol_history.pkl')
 
