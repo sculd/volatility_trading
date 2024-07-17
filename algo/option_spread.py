@@ -37,7 +37,9 @@ def get_df_otm_options_spread(date_str, df_otm_options_history, option_type, tol
         return None
     
     df_otm_short_option_market_open = data.daily.get_df_market_open_from_intraday(df_otm_short_option_intraday)
+    df_otm_short_option_market_open['ticker'] = otm_short_ticker
     df_otm_long_option_market_open = data.daily.get_df_market_open_from_intraday(df_otm_long_option_intraday)
+    df_otm_long_option_market_open['ticker'] = otm_long_ticker
     df_otm_options_market_open = concat_otm_short_long(
         df_otm_short_option_market_open, df_otm_long_option_market_open,
         "o", option_type
@@ -61,7 +63,7 @@ def get_df_otm_options_spread_history(df_daily_expectation, df_options_history, 
     if option_type == "call":
         df_otm_options_history = df_otm_options_history[
             df_otm_options_history.strike_price > df_otm_options_history.upper_price
-        ]    
+        ]
     else:
         df_otm_options_history = df_otm_options_history[
             df_otm_options_history.strike_price < df_otm_options_history.lower_price
