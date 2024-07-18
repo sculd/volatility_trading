@@ -2,7 +2,7 @@ import pandas as pd
 import data.intraday
 import numpy as np
 import scipy.optimize as optimize
-import math, os
+import math, os, logging
 import requests
 
 import data.polygon
@@ -117,6 +117,7 @@ def get_df_atm_vol_history(ticker, dates):
     atm_put_vols = []
     valid_dates = []
     for date in dates[:]:
+        logging.info(f"{date=}")
         try:
             atm_call_vol = get_atm_call_volatility(ticker, date)
         except Exception as ex:
