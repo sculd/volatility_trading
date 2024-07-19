@@ -136,3 +136,8 @@ def get_df_atm_vol_history(ticker, dates):
     df = pd.DataFrame({"atm_call_vol": atm_call_vols, "atm_put_vol": atm_put_vols, "date": valid_dates}).set_index("date")
     return df
 
+
+def load_df_atm_vol_history(ticker):
+    df_name = f"df_{ticker}_atm_vol_history"
+    return pd.read_pickle(f"market_data/{df_name}.pkl")
+

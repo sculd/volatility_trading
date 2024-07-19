@@ -14,13 +14,13 @@ load_dotenv()  # take environment variables from .env.
 
 polygon_api_key = os.getenv("QUANT_GALORE_POLYGON_API_KEY")
 
-from pandas_market_calendars import get_calendar
-
 import pandas as pd
 
 import algo.volatility
 
 import util.tickers
+
+from pandas_market_calendars import get_calendar
 
 calendar = get_calendar("NYSE")
 trading_dates = calendar.schedule(
@@ -36,6 +36,6 @@ def get_cache_df_atm_vol_history(ticker, dates, df_name):
     df_atm_vol_history.to_pickle(f'market_data/{df_name}.pkl')
     return df_atm_vol_history
 
-for ticker in util.tickers.get_stock_tickers():
+for ticker in util.tickers.get_stock_tickers()[2:]:
     get_cache_df_atm_vol_history(ticker, trading_dates, f"df_{ticker}_atm_vol_history")
 

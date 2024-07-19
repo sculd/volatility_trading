@@ -28,10 +28,17 @@ def get_df_market_open_or_close_history_from_intraday_history(df_intraday_histor
 def get_df_market_open_close_history_from_intraday_history(df_intraday_history):
     df_market_open_history = get_df_market_open_or_close_history_from_intraday_history(df_intraday_history, "open")
     df_market_close_history = get_df_market_open_or_close_history_from_intraday_history(df_intraday_history, "close")
-    df_market_open_close_history = df_market_open_history.join(df_market_open_history, lsuffix="_open", rsuffix="_close")
-    df_market_open_close_history["actual_change"] = df_market_close_history.c_close - df_market_close_history.c_open
-    df_market_open_close_history["actual_return"] = (df_market_close_history.c_close - df_market_close_history.c_open) / df_market_close_history.c_open
+    df_market_open_close_history = df_market_open_history.join(df_market_close_history, lsuffix="_open", rsuffix="_close")
+    df_market_open_close_history["actual_change"] = df_market_open_close_history.c_close - df_market_open_close_history.c_open
+    df_market_open_close_history["actual_return"] = (df_market_open_close_history.c_close - df_market_open_close_history.c_open) / df_market_open_close_history.c_open
 
     return df_market_open_close_history
 
+def load_df_daily_history(ticker):
+    df_name = f"df_{ticker}_daily_history"
+    return pd.read_pickle(f"market_data/{df_name}.pkl")
+
+def load_df_market_open_close_history(ticker):
+    df_name = f"df_{ticker}_market_open_close_history"
+    return pd.read_pickle(f"market_data/{df_name}.pkl")
 

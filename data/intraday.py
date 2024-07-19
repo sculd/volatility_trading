@@ -11,3 +11,7 @@ def get_df_intrady_history(ticker, dates):
         dfs.append(df_intraday.reset_index())
     df = pd.concat(dfs, ignore_index=True).set_index("t")
     return df
+
+def load_df_intraday_history(ticker):
+    df_name = f"df_{ticker}_intraday_history"
+    return pd.read_pickle(f"market_data/{df_name}.pkl")
