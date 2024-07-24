@@ -95,7 +95,7 @@ def get_df_otm_options_spread(date_str, df_otm_options_history, option_type, tol
     df_otm_options = df_otm_options_market_open.join(df_otm_options_market_close).join(df_otm_options_midday)
     df_otm_options["pnl_midday"] = df_otm_options["market_o_spread"] - df_otm_options["market_m_spread"]
     df_otm_options["pnl_market_close"] = df_otm_options["market_o_spread"] - df_otm_options["market_c_spread"]
-    df_otm_options["pnl"] = df_otm_options["pnl_midday"] if df_otm_options["pnl_midday"].values[0] < 0 else df_otm_options["pnl_market_close"]
+    df_otm_options["pnl"] = df_otm_options["pnl_market_close"]
 
     return df_otm_options
 
