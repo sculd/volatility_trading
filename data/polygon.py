@@ -1,3 +1,6 @@
+import time
+
+import logging
 import requests
 import pandas as pd
 import numpy as np
@@ -54,11 +57,26 @@ def get_polygon_options_contracts_query_url(underlying_ticker, option_type, date
 
     return add_default_options_params_to_polygon_url(f"{_POLYGON_V3_BASE_URL}/reference/options/contracts", additional_params = params)
 
-def get_polygon_result_dict(url):
-    js = requests.get(url).json()
-    if "results" not in js:
-        return {}
-    return js["results"]
+def get_polygon_quotes_url(ticker, epoch_nano_gte, epoch_nano_lt):
+    return add_default_ticker_params_to_polygon_url(f"https://api.polygon.io/v3/quotes/{ticker}?timestamp.gte={epoch_nano_gte}&timestamp.lt={epoch_nano_lt}&order=asc&limit=10&sort=timestamp&apiKey={polygon_api_key}")
+
+
+_max_tries = 3
+def get_polygon_result_dict(url, tries_remaining=_max_tries):
+    try:
+        js = requests.get(url).json()
+        if "results" not in js:
+            return {}
+        return js["results"]
+    except requests.exceptions.ConnectionError as ex:
+        print(f"{tries_remaining=}\n{ex}")
+        if tries_remaining == 0:
+            return {}
+        else:
+            sleep_seconds = (_max_tries - tries_remaining) * 1.0
+            logging.info(f"sleeping {sleep_seconds} seconds before making retry.")
+            time.sleep(sleep_seconds)
+            return get_polygon_result_dict(url, tries_remaining=tries_remaining-1)
 
 def polygon_result_to_dataframe(result):
     df = pd.json_normalize(result)

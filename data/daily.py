@@ -40,5 +40,8 @@ def load_df_daily_history(ticker):
 
 def load_df_market_open_close_history(ticker):
     df_name = f"df_{ticker}_market_open_close_history"
-    return pd.read_pickle(f"market_data/{df_name}.pkl")
+    df = pd.read_pickle(f"market_data/{df_name}.pkl")
+    df['c_open_nextday'] = df.shift(-1)[['c_open']]
+    df['return_nextday_open'] = (df.c_open_nextday - df.c_close) / df.c_close
+    return df
 

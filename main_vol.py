@@ -36,6 +36,9 @@ def get_cache_df_atm_vol_history(ticker, dates, df_name):
     df_atm_vol_history.to_pickle(f'market_data/{df_name}.pkl')
     return df_atm_vol_history
 
-for ticker in util.tickers.get_stock_tickers()[2:]:
+
+for ticker in util.tickers.get_stock_tickers():
     get_cache_df_atm_vol_history(ticker, trading_dates, f"df_{ticker}_atm_vol_history")
+
+
 

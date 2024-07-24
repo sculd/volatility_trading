@@ -90,17 +90,16 @@ def cache_ticker(ticker):
     print(f"df_put_options_history:\n{df_put_options_history}")
 
 
-'''
+#'''
 cache_ticker(ticker_spy)
 cache_ticker(ticker_spx)
 # note: vix only needs intraday
 cache_ticker(ticker_vix1d)
+#'''
+
 '''
-
-
-cache_ticker("SBUX")
-
 for ticker in util.tickers.get_stock_tickers():
-    pass # cache_ticker(ticker)
+    cache_ticker(ticker)
+'''
 
 
