@@ -47,7 +47,7 @@ def get_df_daily_expectation_actual(df_daily_history, df_intraday_history, df_at
     df_regime = df_daily_history[["c"]].copy()
     df_regime["1_mo_avg"] = df_regime["c"].rolling(window=20).mean()
     df_regime["3_mo_avg"] = df_regime["c"].rolling(window=60).mean()
-    df_regime['regime'] = df_regime.apply(lambda row: 1 if (row['c'] > row['1_mo_avg']) else -1, axis=1)
+    df_regime['regime'] = (df_regime.c.shift() > df_regime['1_mo_avg']).astype(int) * 2 - 1
 
     df_market_open_history = data.daily.get_df_market_open_or_close_history_from_intraday_history(df_intraday_history, "open")
     df_market_close_history = data.daily.get_df_market_open_or_close_history_from_intraday_history(df_intraday_history, "close")
@@ -55,11 +55,12 @@ def get_df_daily_expectation_actual(df_daily_history, df_intraday_history, df_at
     df_market_open_close_history["actual_change"] = df_market_close_history.c_close - df_market_close_history.c_open
 
     df_goog_daily_expectation = algo.expected_move.get_df_daily_expectation(
-        df_market_open_history, df_regime.regime,
+        df_market_open_history,
         (df_atm_vol_history.atm_call_vol_market_open + df_atm_vol_history.atm_put_vol_market_open) / 2,
         expected_move_multiplyer)
 
     df_daily_expectation_actual = df_goog_daily_expectation.join(df_market_open_close_history["actual_change"])
+    df_daily_expectation_actual['regime'] = df_regime.regime
     df_daily_expectation_actual["expected_change_size"] = (df_daily_expectation_actual.upper_price - df_daily_expectation_actual.lower_price) / 2.
 
     return df_daily_expectation_actual
@@ -67,32 +68,34 @@ def get_df_daily_expectation_actual(df_daily_history, df_intraday_history, df_at
 
 import pandas as pd
 
-df_spy_daily_history = pd.read_pickle('market_data/df_spy_daily_history.pkl')
-df_spx_daily_history = pd.read_pickle('market_data/df_spx_daily_history.pkl')
+df_spy_daily_history = pd.read_pickle(f'market_data/df_{util.tickers.ticker_spy}_daily_history.pkl')
+df_spx_daily_history = pd.read_pickle(f'market_data/df_{util.tickers.ticker_spx}_daily_history.pkl')
 
 
 df_regime = df_spy_daily_history[["c"]].copy()
 df_regime["1_mo_avg"] = df_regime["c"].rolling(window=20).mean()
 df_regime["3_mo_avg"] = df_regime["c"].rolling(window=60).mean()
-df_regime['regime'] = df_regime.apply(lambda row: 1 if (row['c'] > row['1_mo_avg']) else -1, axis=1)
+df_regime['regime'] = (df_regime.c.shift() > df_regime['1_mo_avg']).astype(int) * 2 - 1
 
-df_spx_market_open_close_history = data.daily.load_df_market_open_close_history(util.tickers.ticker_spx)
+df_spx_market_open_close_history = data.daily.load_df_market_open_close_history(util.tickers.ticker_ispx)
 df_vix1d_market_open_close_history = data.daily.load_df_market_open_close_history(util.tickers.ticker_vix1d)
 
 df_spx_daily_expectation = algo.expected_move.get_df_daily_expectation(
-    df_spx_market_open_close_history[["c_open"]], df_regime.regime,
-    df_vix1d_market_open_close_history.c_open / 100, 0.5)
+    df_spx_market_open_close_history[["c_open"]],
+    df_vix1d_market_open_close_history.c_open / 100, 1.0)
 
-df_spx_call_options_history = pd.read_pickle('market_data/df_spx_call_options_history.pkl')
-df_spx_put_options_history = pd.read_pickle('market_data/df_spx_put_options_history.pkl')
+df_spx_call_options_history = pd.read_pickle(f'market_data/df_{util.tickers.ticker_spx}_call_options_history.pkl')
+df_spx_put_options_history = pd.read_pickle(f'market_data/df_{util.tickers.ticker_spx}_put_options_history.pkl')
 
+#'''
 print('call option')
 df_spx_otm_call_options_spread_history = algo.option_spread.get_df_otm_options_spread_history(
     df_spx_daily_expectation, df_spx_call_options_history,
     "call", trading_dates, tolerance_days=5
 )
 
-df_spx_otm_call_options_spread_history.to_pickle('market_data/df_spx_otm_call_options_spread_history.pkl')
+df_spx_otm_call_options_spread_history.to_pickle(f'market_data/df_{util.tickers.ticker_spx}_otm_call_options_spread_history.pkl')
+#'''
 
 print('put option')
 df_spx_otm_put_options_spread_history = algo.option_spread.get_df_otm_options_spread_history(
@@ -100,6 +103,6 @@ df_spx_otm_put_options_spread_history = algo.option_spread.get_df_otm_options_sp
     "put", trading_dates, tolerance_days=5
 )
 
-df_spx_otm_put_options_spread_history.to_pickle('market_data/df_spx_otm_put_options_spread_history.pkl')
+df_spx_otm_put_options_spread_history.to_pickle(f'market_data/df_{util.tickers.ticker_spx}_otm_put_options_spread_history.pkl')
 
 print('done')

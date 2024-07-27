@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import pandas as pd
+import numpy as np
 import data.polygon
 import data.daily
 
@@ -96,6 +97,9 @@ def get_df_otm_options_spread(date_str, df_otm_options_history, option_type, tol
     df_otm_options["pnl_midday"] = df_otm_options["market_o_spread"] - df_otm_options["market_m_spread"]
     df_otm_options["pnl_market_close"] = df_otm_options["market_o_spread"] - df_otm_options["market_c_spread"]
     df_otm_options["pnl"] = df_otm_options["pnl_market_close"]
+    #df_otm_options["pnl"] = np.where(df_otm_options.pnl_midday < 0, df_otm_options.pnl_midday, df_otm_options.pnl_market_close)
+    min_pnl = df_otm_options["market_o_spread"] - 5
+    df_otm_options["pnl"] = np.where(df_otm_options.pnl < min_pnl, min_pnl, df_otm_options.pnl)
 
     return df_otm_options
 

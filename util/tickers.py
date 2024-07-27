@@ -49,7 +49,8 @@ Top 10 stocks by market cap
 '''
 
 ticker_spy = "SPY"
-ticker_spx = "I:SPX"
+ticker_ispx = "I:SPX"
+ticker_spx = "SPX"
 # top 8 (10 less 2)
 ticker_aapl = "AAPL"
 ticker_msft = "MSFT"
