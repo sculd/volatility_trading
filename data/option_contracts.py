@@ -12,3 +12,11 @@ def get_df_options_history(ticker, side, dates, zero_day_expiration=True):
         dfs.append(df)
     df = pd.concat(dfs, ignore_index=True)
     return df
+
+
+def load_df_options_history(ticker, side):
+    df_name = f"df_{ticker}_{side}_options_history"
+    df = pd.read_pickle(f"market_data/{df_name}.pkl")
+    return df
+
+

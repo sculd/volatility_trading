@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
@@ -30,32 +31,14 @@ def get_df_otm_options_spread(date_str, df_otm_options_history, option_type, tol
     if option_type == "call":
         otm_short_ticker = df_otm_options_daily.head(1).ticker.values[0]
         otm_long_ticker = df_otm_options_daily.head(2).tail(1).ticker.values[0]
+        strike_gap = df_otm_options_daily.head(2).tail(1).strike_price.values[0] - \
+                     df_otm_options_daily.head(1).strike_price.values[0]
     else:
         otm_short_ticker = df_otm_options_daily.tail(1).ticker.values[0]
         otm_long_ticker = df_otm_options_daily.tail(2).head(1).ticker.values[0]
+        strike_gap = df_otm_options_daily.tail(1).strike_price.values[0] - \
+                     df_otm_options_daily.tail(2).head(1).strike_price.values[0]
 
-    '''
-    df_otm_short_option_intraday = data.polygon.polygon_url_to_dataframe(data.polygon.get_polygon_intraday_query_url(otm_short_ticker, date_str))
-    df_otm_long_option_intraday = data.polygon.polygon_url_to_dataframe(data.polygon.get_polygon_intraday_query_url(otm_long_ticker, date_str))
-    if df_otm_short_option_intraday.empty or df_otm_long_option_intraday.empty:
-        return None
-    
-    df_otm_short_option_market_open = data.daily.get_df_market_open_from_intraday(df_otm_short_option_intraday)
-    df_otm_short_option_market_open['ticker'] = otm_short_ticker
-    df_otm_long_option_market_open = data.daily.get_df_market_open_from_intraday(df_otm_long_option_intraday)
-    df_otm_long_option_market_open['ticker'] = otm_long_ticker
-    df_otm_options_market_open = concat_otm_short_long(
-        df_otm_short_option_market_open, df_otm_long_option_market_open,
-        "o", option_type
-    )
-
-    df_otm_short_option_market_close = data.daily.get_df_market_close_from_intraday(df_otm_short_option_intraday)
-    df_otm_long_option_market_close = data.daily.get_df_market_close_from_intraday(df_otm_long_option_intraday)
-    df_otm_options_market_close = concat_otm_short_long(
-        df_otm_short_option_market_close, df_otm_long_option_market_close,
-        "c", option_type
-    )
-    #'''
 
     def get_df_spread_at_timestamp(ticker_short, ticker_long, o_or_c_or_m, epoch_nano_head, epoch_nano_tail):
         df_otm_short_open_quote = data.polygon.polygon_url_to_dataframe(
@@ -64,6 +47,8 @@ def get_df_otm_options_spread(date_str, df_otm_options_history, option_type, tol
             data.polygon.get_polygon_quotes_url(ticker_long, epoch_nano_head, epoch_nano_tail)).head(1)
         if df_otm_short_open_quote.empty or df_otm_long_open_quote.empty:
             return None
+        df_otm_short_open_quote.sip_timestamp = pd.to_datetime(df_otm_short_open_quote.sip_timestamp, unit="ns", utc=True)
+        df_otm_long_open_quote.sip_timestamp = pd.to_datetime(df_otm_long_open_quote.sip_timestamp, unit="ns", utc=True)
         df_otm_short_open_quote['date'] = date_str
         df_otm_long_open_quote['date'] = date_str
         df_otm_short_open_quote = df_otm_short_open_quote.set_index('date')
@@ -97,14 +82,15 @@ def get_df_otm_options_spread(date_str, df_otm_options_history, option_type, tol
     df_otm_options["pnl_midday"] = df_otm_options["market_o_spread"] - df_otm_options["market_m_spread"]
     df_otm_options["pnl_market_close"] = df_otm_options["market_o_spread"] - df_otm_options["market_c_spread"]
     df_otm_options["pnl"] = df_otm_options["pnl_market_close"]
-    #df_otm_options["pnl"] = np.where(df_otm_options.pnl_midday < 0, df_otm_options.pnl_midday, df_otm_options.pnl_market_close)
-    min_pnl = df_otm_options["market_o_spread"] - 5
+    min_pnl = df_otm_options["market_o_spread"] - strike_gap
     df_otm_options["pnl"] = np.where(df_otm_options.pnl < min_pnl, min_pnl, df_otm_options.pnl)
 
     return df_otm_options
 
 
 def get_df_otm_options_spread_history(df_daily_expectation, df_options_history, option_type, dates, tolerance_days=0):
+    if df_options_history.index.name != 'date':
+        pass # df_options_history = df_options_history.set_index('date')
     df_otm_options_history = df_options_history.join(df_daily_expectation, on='date')
     if option_type == "call":
         df_otm_options_history = df_otm_options_history[
@@ -122,6 +108,9 @@ def get_df_otm_options_spread_history(df_daily_expectation, df_options_history, 
         if df_date is None:
             continue
         dfs.append(df_date)
+    if len(dfs) == 0:
+        print(f'the option spread is empty for {option_type=}\n{df_daily_expectation}')
+        return None
     df = pd.concat(dfs, ignore_index=False)
     return df
 
